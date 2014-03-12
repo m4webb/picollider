@@ -123,7 +123,7 @@ def play_sine(client, freq=440, amp=0.5, duration=0.3):
     args['env_time1'] = 0.03
     args['env_time2'] = 0.5
     args['env_time3'] = 0
-    args['env_releaseNode'] = 2 
+    args['env_releaseNode'] = 2
     args['env_loopNode'] = 1
     synth = PiSynth(client, **args)
     synth.start()
