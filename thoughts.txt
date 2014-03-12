@@ -1,0 +1,7 @@
+confidence, random walk
+
+how much I like everyone
+
+send out periodically what I am doing, with its parameters
+
+your confidence affects how much I like you, how likely I am to follow you

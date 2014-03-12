@@ -4,7 +4,7 @@ import pisynth
 
 class Bell(Thread):
     def __init__(self, client, nominal=680, dhum=16.6, dprime=2.0, dtierce=-10,
-                 dquint=40.):
+                 dquint=40., decay=10):
         super().__init__()
         self.client = client
         self.nominal = nominal
@@ -12,6 +12,7 @@ class Bell(Thread):
         self.dprime = dprime
         self.dtierce = dtierce
         self.dquint = dquint
+        self.decay = decay
 
     def run(self):
         fundamental = self.nominal / 8.
@@ -42,7 +43,7 @@ class Bell(Thread):
         args['env_level4'] = 0
         args['env_time0'] = 0.01
         args['env_time1'] = 0.03
-        args['env_time2'] = 5
+        args['env_time2'] = self.decay
         args['env_time3'] = 0
         args['env_curve0'] = 5
         args['env_curve2'] = -5
