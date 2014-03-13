@@ -1,10 +1,25 @@
 import random
 
-#import blips
-#import flits
-#import bells
+from pythonosc import udp_client
 
-class Parameter(object):
+import blips
+import flits
+import bells
+
+class Message(object):
+    def __init__(self, confidence, mood, contents={}):
+        self.confidence = confidence
+        self.mood = mood
+        self.contents = contents
+
+class Brain(object):
+    def __init__(self, server_location='127.0.0.1', server_port=50000):
+        self.client = udp_client.UDPClient(server_location, server_port)
+
+    def main(self):
+        pass
+
+class WalkingParameter(object):
     def __init__(self, low, high, viscosity):
         self.low = float(low)
         self.high = float(high)
@@ -14,7 +29,7 @@ class Parameter(object):
         self.dx = 0.0
 
     def __repr__(self):
-        return repr(self.get())
+        return "<WalkingParameter {}>".format(str(self.get()))
 
     def __str__(self):
         return str(self.get())
@@ -49,22 +64,14 @@ class Parameter(object):
 
     def walk(self):
         self.dx += self.viscosity - random.random()*self.viscosity*2.0
-        if self.dx < -3.0*self.viscosity:
-            self.dx = -3.0*self.viscosity
-        elif self.dx > 3.0*self.viscosity:
-            self.dx = 3.0*self.viscosity
+        if self.dx < -5.0*self.viscosity:
+            self.dx = -5.0*self.viscosity
+        elif self.dx > 5.0*self.viscosity:
+            self.dx = 5.0*self.viscosity
         self.normedval += self.dx
         if self.normedval > 1.0:
             self.normedval = 1.0
-            self.dx = -0.5*self.viscosity
+            self.dx = -1.0*self.viscosity
         elif self.normedval < 0.0:
             self.normedval = 0.0
-            self.dx = 0.5*self.viscosity
-
-    def get_walk(self):
-        val = self.get()
-        self.walk()
-        return val, self.dx
-
-class Brain(object):
-    pass
+            self.dx = 1.0*self.viscosity

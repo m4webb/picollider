@@ -23,15 +23,15 @@ class Bell(Thread):
 
         args = {}
         args['freq0'] = hum
-        args['amp0'] = 0.1
+        args['amp0'] = 0.4
         args['freq1'] = prime
-        args['amp1'] = 0.1
+        args['amp1'] = 0.4
         args['freq2'] = tierce
-        args['amp2'] = 0.1
+        args['amp2'] = 0.4
         args['freq3'] = quint
-        args['amp3'] = 0.1
+        args['amp3'] = 0.4
         args['freq4'] = self.nominal
-        args['amp4'] = 0.1
+        args['amp4'] = 0.4
         for i in range(5,8):
             args['amp{}'.format(i)] = 0
 

@@ -52,7 +52,7 @@ class BlipperBase(Thread):
         synth = pisynth.PiSynth(self.client, **args)
         synth.start()
 
-class SimplerBlipper(BlipperBase):
+class SimpleBlipper(BlipperBase):
     def __init__(self, client, wait_times=[0.1, 0.1, 0.3, 0.5],
                  durations=[0.2, 0.4, 0.4, 0.6, 0.9],
                  freqs=[400, 450, 500, 550, 600],

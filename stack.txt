@@ -1,0 +1,24 @@
+Sound stack
+-----------
+
+Sound server (scsynth)
+
+Synthdef (pisynth1)
+
+Python wrapper (PiSynth) [Thread, multiple synths]
+
+MoodEngine (SimpleBlipper, Flitter, ...) [Thread, allow control]
+
+Mood                        ----\
+  |_ knows how to change 
+     MoodEngine parameters 
+     in response to network 
+     messages, and give
+     network messages 
+                                --> interface with network stack
+Brain                       ----/
+  |_ if network message belongs
+     current Mood, maybe pass it 
+     on; otherwise, maybe change
+     Mood and pass it on
+     (confidence test)
