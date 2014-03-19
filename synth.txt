@@ -58,5 +58,5 @@ SynthDef("pisynth1", {
                   env_releaseNode,
                   env_loopNode);
     envgen = EnvGen.kr(env, gate: gate, doneAction: doneAction);
-    Out.ar(0, mix*envgen);
-})
+    Out.ar(0, [mix*envgen, mix*envgen]);
+}).load(s);

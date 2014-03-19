@@ -5,34 +5,50 @@ from threading import Thread
 import pisynth
 import brain
 
+def cc(first, second, weight):
+    """Return the convex combination (weight)*first + (1 - weight)*second"""
+    return weight*first + (1 - weight)*second
+
 class FlitterMood(object):
-    def __init__(self, message=None):
-        self.flitter = Flitter()
-        if message and message.mood == "Flitter":
+    def __init__(self, client, message=None):
+        self.client = client
+        self.flitter = Flitter(self.client)
+        if message and message.mood == 'Flitter':
             for key in message.contents:
-                if key == "freq":
+                if key == 'freq':
                     self.flitter.freq.set(message.contents[key])
                 else:
                     setattr(self.flitter, key, message.contents[key])
-        self.flitter.start()
 
     def read_message(self, message):
-        if message.mood != "Flitter":
+        if message.mood != 'Flitter':
             return
+        weight = message.confidence
         for key in message.contents:
-            if key == "freq":
-                weight = message.confidence
-                new_val = weight*message.contents[key] +\
-                          (1 - weight)*self.freq.get()
+            if key in ('freq',):
+                new_val = cc(message.contents[key], self.flitter.freq.get(), weight)
                 self.flitter.freq.set(new_val)
-            else:
-                weight = message.confidence
-                new_val = weight*message.contents[key] +\
-                          (1 - weight)*self.freq.get()
+            elif key in ('overtone_amps, overtone_ds'):
+                list_to_change = getattr(self.flitter, key)
+                message_list = message.contents[key]
+                for i in range(len(list_to_change)):
+                    new_val = cc(message_list[i], list_to_change[i], weight)
+                    list_to_change[i] = new_val
+            elif key in ('wait', 'density', 'decay'):
+                new_val = cc(message.contents[key], getattr(self.flitter, key),
+                             weight) 
                 setattr(self.flitter, key, new_val)
-        
 
+    def create_message(self, confidence, influence):
+        pass
 
+    def enter(self):
+        self.flitter.start()
+
+    def leave(self):
+        self.flitter.stop()
+
+       
 class Flitter(Thread):
     def __init__(self, client):
         super().__init__()
@@ -44,6 +60,11 @@ class Flitter(Thread):
         self.overtone_ds = [0, 0, 0, 0, 0, 0, 0, 0]
         self.decay = 0.05
         self.running = False
+
+    def __repr__(self):
+        return "\n".join(["{:20} {}".format(attr, repr(getattr(self, attr))) for 
+            attr in ('wait', 'freq', 'density', 'overtone_amps', 'overtone_ds',
+            'decay', 'running')])
 
     def run(self):
         self.running = True

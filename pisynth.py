@@ -5,9 +5,8 @@ from pythonosc import udp_client
 from pythonosc import osc_message_builder
 
 class PiSynth(Thread):
-    available_nids = list(range(10000, 40000))
     def __init__(self,    
-                 client,
+                 manager,
                  duration=2,
                  hold=False,
                  freq0=400,
@@ -46,7 +45,7 @@ class PiSynth(Thread):
                  **kwargs
                 ):
         super().__init__(**kwargs)
-        self.client = client
+        self.manager = manager
         self.duration = duration
         self.hold = hold
         self.arg_dict = {}
@@ -85,7 +84,7 @@ class PiSynth(Thread):
         self.arg_dict['doneAction'] = doneAction
 
     def run(self):
-        nid = self.available_nids.pop(0)
+        nid = self.manager.borrow_nid()
         msg = osc_message_builder.OscMessageBuilder(address = '/s_new')
         msg.add_arg('pisynth1')
         msg.add_arg(nid)
@@ -95,7 +94,7 @@ class PiSynth(Thread):
             msg.add_arg(key)
             msg.add_arg(self.arg_dict[key])
         msg_build = msg.build()
-        self.client.send(msg_build)
+        self.manager.client.send(msg_build)
         time.sleep(self.duration)
         while self.hold:
             time.sleep(self.duration)
@@ -104,8 +103,8 @@ class PiSynth(Thread):
         msg.add_arg('gate')
         msg.add_arg(0)
         msg_build = msg.build()
-        self.client.send(msg_build)
-        self.available_nids.append(nid)
+        self.manager.client.send(msg_build)
+        self.manager.return_nid(nid)
 
 def play_sine(client, freq=440, amp=0.5, duration=0.3):
     args = {}
