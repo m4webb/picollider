@@ -18,6 +18,7 @@ class SynthManager(threading.Thread):
         self._nids = set(range(nids_start, nids_end))
         self._returned_nids = set()
         self._freed_nids = set()
+        self._tricky_nids = set()
         self._running = False
         self._nid_lock = threading.Lock()
 
@@ -26,17 +27,26 @@ class SynthManager(threading.Thread):
             self._freed_nids.add(args[0])
 
     def _node_fail(self, *args):
-        """Catch nodes that have been freed and missed."""
-        print("called _node_fail {}".format(' '.join(args)))
-        failed_command = args[0]
+        """Catch nodes that have been freed serverside but not recognized
+        clientside.
+        """
+        failed_command = args[0].strip()
         failed_message = args[1].split()
         if failed_command == "/n_set" and failed_message[0] == "Node" and\
            failed_message[2] == "not" and failed_message[3] == "found":
             with self._nid_lock:
-                self._freed_nids.discard(int(failed_message[1]))
-                self._returned_nids.discard(int(failed_message[1]))
+                nid = int(failed_message[1])
+                self._freed_nids.discard(nid)
+                self._returned_nids.discard(nid)
+                self._tricky_nids.discard(nid)
+                self._nids.add(nid)
 
     def _free_nid(self, nid):
+        msg = osc_message_builder.OscMessageBuilder(address = '/n_free')
+        msg.add_arg(nid)
+        self.client.send(msg.build())
+
+    def _gate0_nid(self, nid):
         msg = osc_message_builder.OscMessageBuilder(address = '/n_set')
         msg.add_arg(nid)
         msg.add_arg('gate')
@@ -58,9 +68,12 @@ class SynthManager(threading.Thread):
                 self._nids.update(returned_and_freed)
                 self._returned_nids.difference_update(returned_and_freed)
                 self._freed_nids.difference_update(returned_and_freed)
-                for nid in self._returned_nids:
+                self._tricky_nids.difference_update(returned_and_freed)
+                for nid in self._tricky_nids.copy():
                     self._free_nid(nid)
-                print("self._returned_nids {}".format(self._returned_nids))
+                for nid in self._returned_nids.copy():
+                    self._gate0_nid(nid)
+                    self._tricky_nids.add(nid)
             time.sleep(self._wait)
         msg = osc_message_builder.OscMessageBuilder(address = '/notify')
         msg.add_arg(0)
