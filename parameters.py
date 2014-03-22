@@ -64,7 +64,7 @@ class StickyList(ListParameter):
             probability = message.confidence
             for i in range(len(self.obj)):
                 if random.random() < probability:
-                    self.obj[i] = messaage.contents[self.name][i]
+                    self.obj[i] = message.contents[self.name][i]
 
 class ConvexCombinationValue(SingleObjectParameter):
     def respond_to_message(self, message):
