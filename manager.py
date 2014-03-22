@@ -30,12 +30,16 @@ class SynthManager(threading.Thread):
         """Catch nodes that have been freed serverside but not recognized
         clientside.
         """
+        #print(args)
         failed_command = args[0].strip()
         failed_message = args[1].split()
-        if failed_command == "/n_set" and failed_message[0] == "Node" and\
-           failed_message[2] == "not" and failed_message[3] == "found":
+        if failed_command in (r"/n_set", r"/n_free") and\
+           failed_message[0] == "Node" and\
+           failed_message[2] == "not" and\
+           failed_message[3] == "found":
             with self._nid_lock:
                 nid = int(failed_message[1])
+                #print('discarding {}...'.format(nid))
                 self._freed_nids.discard(nid)
                 self._returned_nids.discard(nid)
                 self._tricky_nids.discard(nid)
@@ -71,10 +75,11 @@ class SynthManager(threading.Thread):
                 self._tricky_nids.difference_update(returned_and_freed)
                 for nid in self._tricky_nids.copy():
                     self._free_nid(nid)
-                for nid in self._returned_nids.copy():
+                for nid in self._returned_nids - self._tricky_nids:
                     self._gate0_nid(nid)
                     self._tricky_nids.add(nid)
             time.sleep(self._wait)
+        server_thread.stop()
         msg = osc_message_builder.OscMessageBuilder(address = '/notify')
         msg.add_arg(0)
         self.client.send(msg.build())

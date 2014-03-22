@@ -7,22 +7,24 @@ import brain
 import parameters
 
 class FlitterMood(object):
-    def __init__(self, manager):
-        self.manager = manager
+    def __init__(self, brain):
+        self.brain = brain
         self.mood_name = 'Flitter'
         self.running = False
 
     def read_message(self, message):
+        self.brain.parameter_lock.acquire()
         if message.mood != self.mood_name:
             return
         probability = message.confidence
         for parameter in self.flitter.parameters:
             if random.random() < probability:
                 parameter.respond_to_message(message)
+        self.brain.parameter_lock.release()
 
-    def create_message(self, confidence, influence):
-        message = brain.Message(confidence, self.mood_name)
-        probability = influence
+    def create_message(self):
+        message = brain.Message(self.brain.confidence, self.mood_name)
+        probability = self.brain.influence
         for parameter in self.flitter.parameters:
             if random.random() < probability:
                 parameter.prepare_message(message)
@@ -30,7 +32,7 @@ class FlitterMood(object):
     def enter(self, message=None):
         if self.running:
             return
-        self.flitter = Flitter(self.manager)
+        self.flitter = Flitter(self.brain.manager)
         if message and message.mood == self.mood_name:
             for parameter in self.flitter.parameters:
                 parameter.initialize_message(message)
