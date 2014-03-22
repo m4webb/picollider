@@ -22,7 +22,8 @@ class _MessageHandler(socketserver.BaseRequestHandler):
     def handle(self):
         print("Received message")
         message = pickle.loads(self.request[0])
-        self.server.brain.current_mood.read_message(message)
+        if message.confidence > self.server.brain.confidence:
+            self.server.brain.current_mood.read_message(message)
 
 class MessageServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
     def __init__(self, address, brain):
@@ -71,7 +72,7 @@ class Brain(object):
             if random.random() < 0.02:
                 print("Perturbed")
                 self.current_mood.perturb(self.influence)
-            if random.random() < self.influence:
+            if random.random() < 0.1 and random.random() < self.influence:
                 print("Sending message")
                 self.send_message(self.current_mood.create_message())
             if random.random() < 0.05:
