@@ -2,9 +2,9 @@ import time
 import random
 from threading import Thread
 
-import pisynth
-import brain
-import parameters
+import .pisynth
+import .brain
+import .parameters
 
 class FlitterMood(object):
     def __init__(self, brain):

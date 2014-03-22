@@ -2,8 +2,8 @@ import time
 import random
 from threading import Thread
 
-import pisynth
-import piutils
+import .pisynth
+import .piutils
 
 class BlipperBase(Thread):
     """Constant envelope; wait time, duration, pitch drawn from implementable

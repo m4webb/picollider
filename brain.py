@@ -7,10 +7,10 @@ import time
 
 from pythonosc import udp_client
 
-import manager
-import blips
-import flits
-import bells
+import .manager
+import .blips
+import .flits
+import .bells
 
 class Message(object):
     def __init__(self, confidence, mood, contents={}):
