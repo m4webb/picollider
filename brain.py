@@ -1,3 +1,9 @@
+class Message(object):
+    def __init__(self, confidence, mood, contents={}):
+        self.confidence = confidence
+        self.mood = mood
+        self.contents = contents
+
 import random
 import socket
 import socketserver
@@ -11,12 +17,6 @@ import picollider.manager as manager
 import picollider.blips as blips
 import picollider.flits as flits
 import picollider.bells as bells
-
-class Message(object):
-    def __init__(self, confidence, mood, contents={}):
-        self.confidence = confidence
-        self.mood = mood
-        self.contents = contents
 
 class _MessageHandler(socketserver.BaseRequestHandler):
     def handle(self):
