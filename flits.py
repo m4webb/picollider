@@ -29,6 +29,7 @@ class FlitterMood(object):
         for parameter in self.flitter.parameters:
             if random.random() < probability:
                 parameter.prepare_message(message)
+        return message
 
     def enter(self, message=None):
         if self.running:

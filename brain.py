@@ -20,6 +20,7 @@ import picollider.bells as bells
 
 class _MessageHandler(socketserver.BaseRequestHandler):
     def handle(self):
+        print("Received message")
         message = pickle.loads(self.request[0])
         self.server.brain.current_mood.read_message(message)
 
@@ -67,12 +68,16 @@ class Brain(object):
                                      self.message_server.serve_forever)
         self.message_server_thread.start()
         while True:
-            if random.random() < 0.1:
+            if random.random() < 0.02:
+                print("Perturbed")
                 self.current_mood.perturb(self.influence)
             if random.random() < self.influence:
+                print("Sending message")
                 self.send_message(self.current_mood.create_message())
             if random.random() < 0.05:
+                print("New confidence")
                 self.new_confidence()
             if random.random() < 0.05:
+                print("New influence")
                 self.new_influence()
             time.sleep(1.0)
