@@ -1,6 +1,6 @@
 from threading import Thread
 
-from . import pisynth
+import picollider.pisynth as pisynth
 
 class Bell(Thread):
     def __init__(self, client, nominal=680, dhum=16.6, dprime=2.0, dtierce=-10,
