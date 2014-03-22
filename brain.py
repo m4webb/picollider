@@ -38,6 +38,7 @@ class Brain(object):
         self.message_port = message_port
         self.message_server = MessageServer((message_server, self.message_port),
                                             self)
+        self.message_recipients = message_recipients
         self.message_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.parameter_lock = threading.Lock()
         self.moods = [flits.FlitterMood(self)]

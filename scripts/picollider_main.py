@@ -16,7 +16,7 @@ if __name__ == "__main__":
         scsynth_server = cp['PiCollider']['scsynth_server'],
         scsynth_port = int(cp['PiCollider']['scsynth_port']),
         message_server = cp['PiCollider']['message_server'],
-        message_recipients = cp['PiCollider']['message_recipients'].split(',')
+        message_recipients = cp['PiCollider']['message_recipients'].split(','),
         message_port = int(cp['PiCollider']['message_port'])
     )
 
