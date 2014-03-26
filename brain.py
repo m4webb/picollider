@@ -48,8 +48,9 @@ class Brain(object):
     def send_message(self, message):
         pickled_message = pickle.dumps(message)
         for recipient in self.message_recipients:
-            self.message_client.sendto(pickled_message, (recipient,
-                                       self.message_port))
+            if random.random() < self.influence:
+                self.message_client.sendto(pickled_message, (recipient,
+                                           self.message_port))
 
     def new_confidence(self):
         self.confidence = random.random()**2
