@@ -4,8 +4,7 @@ from threading import Thread
 
 import picollider.pisynth as pisynth
 import picollider.parameters as parameters
-
-from picollider.brain import Message
+import picollider.message as message
 
 class FlitterMood(object):
     def __init__(self, brain):
@@ -24,7 +23,7 @@ class FlitterMood(object):
         self.brain.parameter_lock.release()
 
     def create_message(self):
-        message = Message(self.brain.confidence, self.mood_name)
+        message = message.Message(self.brain.confidence, self.mood_name)
         probability = self.brain.influence
         for parameter in self.flitter.parameters:
             if random.random() < probability:
@@ -119,3 +118,5 @@ class Flitter(Thread):
         args['env_loopNode'] = 1
         synth = pisynth.PiSynth(self.manager, **args)
         synth.start()
+
+

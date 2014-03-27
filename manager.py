@@ -79,7 +79,7 @@ class SynthManager(threading.Thread):
                     self._gate0_nid(nid)
                     self._tricky_nids.add(nid)
             time.sleep(self._wait)
-        server_thread.stop()
+        self._server.shutdown()
         msg = osc_message_builder.OscMessageBuilder(address = '/notify')
         msg.add_arg(0)
         self.client.send(msg.build())
