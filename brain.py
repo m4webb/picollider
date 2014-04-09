@@ -5,12 +5,14 @@ import pickle
 import threading
 import time
 
-from pythonosc import udp_client
+from pythonosc import udp_client, osc_message_builder
 
 import picollider.manager as manager
 import picollider.blips as blips
 import picollider.flits as flits
 import picollider.bells as bells
+import picollider.silence as silence 
+import picollider.synthdefs as synthdefs
 
 class _MessageHandler(socketserver.BaseRequestHandler):
     def handle(self):
@@ -37,7 +39,12 @@ class Brain(object):
         self.message_recipients = message_recipients
         self.message_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.parameter_lock = threading.Lock()
-        self.moods = [flits.FlitterMood(self)]
+        self.moods = [blips.SimpleBlipperMood(self), flits.FlitterMood(self),
+                      silence.SilenceMood(self)]
+
+        msg = osc_message_builder.OscMessageBuilder(address = '/d_recv')
+        msg.add_arg(synthdefs.pisynth1)
+        self.client.send(msg.build())
     
     def send_message(self, message):
         pickled_message = pickle.dumps(message)
@@ -58,16 +65,24 @@ class Brain(object):
         self.influence = 0.5
         self.new_influence()
         self.manager.start()
-        self.current_mood = self.moods[0]
+        self.current_mood = self.moods.pop(0)
         self.current_mood.enter()
         self.message_server_thread = threading.Thread(target=
                                      self.message_server.serve_forever)
         self.message_server_thread.start()
         while True:
+            if random.random() < 0.01:
+                new_mood = random.choice(self.moods)
+                self.moods.remove(new_mood)
+                self.current_mood.leave()
+                new_mood.enter()
+                self.moods.append(self.current_mood)
+                self.current_mood = new_mood
+                print("New mood!")
             if random.random() < 0.02:
                 print("Perturbed")
                 self.current_mood.perturb(self.influence)
-            if random.random() < 0.1 and random.random() < self.influence:
+            if random.random() < 0.05 and random.random() < self.influence:
                 print("Sending message")
                 self.send_message(self.current_mood.create_message())
             if random.random() < 0.05:

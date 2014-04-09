@@ -41,6 +41,9 @@ class SetParameter(SingleObjectParameter):
             for item in self.obj - message.contents[self.name]:
                 if random.random() < probability:
                     self.obj.remove(item)
+    def initialize_from_message(self, message):
+        if self.name in message.contents:
+            self.obj = message.contents[self.name]
 
 class ListParameter(SingleObjectParameter):
     def __getitem__(self, index):
