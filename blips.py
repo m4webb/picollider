@@ -5,7 +5,7 @@ from threading import Thread
 import picollider.pisynth as pisynth
 import picollider.piutils as piutils
 import picollider.parameters as parameters
-import picollider.message as message
+from picollider.message import Message
 
 class BlipperBase(Thread):
     """Constant envelope; wait time, duration, pitch drawn from implementable
@@ -15,6 +15,7 @@ class BlipperBase(Thread):
                  overtone_amps = [0.1, 0, 0, 0, 0, 0, 0, 0],
                 ):
         super().__init__()
+        self.daemon = True
         self.manager = manager
         self.env_levels = env_levels
         self.env_times = env_times
@@ -89,7 +90,7 @@ class SimpleBlipperMood(object):
         self.brain.parameter_lock.release()
 
     def create_message(self):
-        message = message.Message(self.brain.confidence, self.mood_name)
+        message = Message(self.brain.confidence, self.mood_name)
         probability = self.brain.influence
         for parameter in self.blipper.parameters:
             if random.random() < probability:
@@ -115,7 +116,7 @@ class SimpleBlipperMood(object):
     def perturb(self, magnitude):
         if random.random() < magnitude:
             old_set = self.blipper.wait_times.obj
-            for item in old_set:
+            for item in old_set.copy():
                 if random.random() < magnitude:
                     old_set.discard(item)
             for i in range(3):
@@ -123,7 +124,7 @@ class SimpleBlipperMood(object):
             self.blipper.wait_times.obj = old_set
         if random.random() < magnitude:
             old_set = self.blipper.durations.obj
-            for item in old_set:
+            for item in old_set.copy():
                 if random.random() < magnitude:
                     old_set.discard(item)
             for i in range(3):
@@ -131,7 +132,7 @@ class SimpleBlipperMood(object):
             self.blipper.durations.obj = old_set
         if random.random() < magnitude:
             old_set = self.blipper.freqs.obj
-            for item in old_set:
+            for item in old_set.copy():
                 if random.random() < magnitude:
                     old_set.discard(item)
             for i in range(3):

@@ -69,6 +69,7 @@ class FlitterMood(object):
 class Flitter(Thread):
     def __init__(self, manager):
         super().__init__()
+        self.daemon = True
         self.manager = manager
         self.wait = parameters.ConvexCombinationValue('wait', 0.1)
         self.freq = parameters.WalkingParameter('freq', 100, 1000, 0.001) 

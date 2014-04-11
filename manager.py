@@ -4,14 +4,14 @@ import threading
 from pythonosc import osc_server, dispatcher, osc_message_builder
 
 class SynthManager(threading.Thread):
-    def __init__(self, client, address='localhost', fauxport=60000, wait=5.,
-                 nids_start=10000, nids_end=40000):
+    def __init__(self, client, fauxaddress=('localhost', 60000), wait=5.,
+                 nids_start=10000, nids_end=40000, pan=0):
         super().__init__()
         self.client = client
         d = dispatcher.Dispatcher()
         d.map('/n_end', self._node_end)
         d.map('/fail', self._node_fail)
-        self._server = osc_server.ThreadingOSCUDPServer((address, fauxport), d)
+        self._server = osc_server.ThreadingOSCUDPServer(fauxaddress, d)
         del self._server.socket #hack to make server use socket opened by client
         self._server.socket = self.client._sock #hack cont'd
         self._wait = wait
@@ -21,6 +21,7 @@ class SynthManager(threading.Thread):
         self._tricky_nids = set()
         self._running = False
         self._nid_lock = threading.Lock()
+        self.pan = pan
 
     def _node_end(self, *args):
         with self._nid_lock:
@@ -37,7 +38,7 @@ class SynthManager(threading.Thread):
            failed_message[0] == "Node" and\
            failed_message[2] == "not" and\
            failed_message[3] == "found":
-            with self._nid_lock:
+           with self._nid_lock:
                 nid = int(failed_message[1])
                 #print('discarding {}...'.format(nid))
                 self._freed_nids.discard(nid)
@@ -65,7 +66,7 @@ class SynthManager(threading.Thread):
         msg = osc_message_builder.OscMessageBuilder(address = '/notify')
         msg.add_arg(1)
         self.client.send(msg.build())
-        while self._running:
+        while self._running or self._tricky_nids.union(self._returned_nids):
             with self._nid_lock:
                 returned_and_freed = self._returned_nids.intersection(
                                      self._freed_nids)
@@ -79,10 +80,10 @@ class SynthManager(threading.Thread):
                     self._gate0_nid(nid)
                     self._tricky_nids.add(nid)
             time.sleep(self._wait)
-        self._server.shutdown()
         msg = osc_message_builder.OscMessageBuilder(address = '/notify')
         msg.add_arg(0)
         self.client.send(msg.build())
+        self._server.shutdown()
 
     def stop(self):
         self._running = False

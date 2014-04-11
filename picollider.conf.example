@@ -1,6 +1,6 @@
 [PiCollider]
-scsynth_server = 127.0.0.1
-scsynth_port = 50000
-message_server = 192.168.2.1
-message_recipients = 192.168.2.2,192.168.2.3
-message_port = 50001
+scsynth_address = 127.0.0.1, 50000
+message_address = 192.168.2.1, 50001
+recipient_addresses = 192.168.2.2, 50001; 192.168.2.3, 50001
+nids_start = 10000
+nids_end = 40000

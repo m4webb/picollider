@@ -43,7 +43,7 @@ class PiSynth(Thread):
                  gate=1, 
                  doneAction=2,
                  **kwargs
-                ):
+                 ):
         super().__init__(**kwargs)
         self.manager = manager
         self.duration = duration
@@ -81,6 +81,7 @@ class PiSynth(Thread):
         self.arg_dict['env_releaseNode'] = env_releaseNode
         self.arg_dict['env_loopNode'] = env_loopNode
         self.arg_dict['gate'] = gate
+        self.arg_dict['pan'] = self.manager.pan
         self.arg_dict['doneAction'] = doneAction
 
     def run(self):
