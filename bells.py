@@ -1,12 +1,62 @@
+import random
+import time
 from threading import Thread
 
 import picollider.pisynth as pisynth
+from picollider.engine import Engine
+from picollider.parameters import ConvexCombinationValue
+
+class BellsEngine(Engine):
+    def __init__(self, manager):
+        super().__init__(manager)
+        self.name = "Bells"
+        self.nominal = ConvexCombinationValue('nominal', 
+                random.random()*400 + 400)
+        self.dhum = ConvexCombinationValue('dhum', 
+                random.random()*40 - 20)
+        self.dprime = ConvexCombinationValue('dprime', 
+                random.random()*40 - 20)
+        self.dtierce = ConvexCombinationValue('dtierce', 
+                random.random()*40 - 20)
+        self.dquint = ConvexCombinationValue('dquint', 
+                random.random()*40 - 20)
+        self.decay = ConvexCombinationValue('decay', 
+                random.random()*20 + 7)
+        self.parameters.extend([
+            self.nominal,
+            self.dhum,
+            self.dprime,
+            self.dtierce,
+            self.dquint,
+            self.decay
+            ])
+
+    def crank(self):
+        bell = Bell(self.manager, self.nominal.get(), self.dhum.get(),
+                self.dprime.get(), self.dtierce.get(), self.dquint.get(),
+                self.decay.get())
+        bell.start()
+        time.sleep(self.decay.get() + random.random()*16 - 8)
+
+    def perturb(self, magnitude):
+        if random.random() < magnitude:
+            self.nominal.set(random.random()*400 + 400)
+        if random.random() < magnitude:
+            self.dhum.set(random.random()*40 - 20)
+        if random.random() < magnitude:
+            self.dprime.set(random.random()*40 - 20)
+        if random.random() < magnitude:
+            self.dtierce.set(random.random()*40 - 20)
+        if random.random() < magnitude:
+            self.dquint.set(random.random()*40 - 20)
+        if random.random() < magnitude:
+            self.decay.set(random.random()*20 + 7)
 
 class Bell(Thread):
-    def __init__(self, client, nominal=680, dhum=16.6, dprime=2.0, dtierce=-10,
+    def __init__(self, manager, nominal=680, dhum=16.6, dprime=2.0, dtierce=-10,
                  dquint=40., decay=10):
         super().__init__()
-        self.client = client
+        self.manager = manager
         self.nominal = nominal
         self.dhum = dhum
         self.dprime = dprime
@@ -49,5 +99,5 @@ class Bell(Thread):
         args['env_curve2'] = -5
         args['env_releaseNode'] = 2
         args['env_loopNode'] = 1
-        synth = pisynth.PiSynth(self.client, **args)
+        synth = pisynth.PiSynth(self.manager, **args)
         synth.start()

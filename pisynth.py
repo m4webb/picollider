@@ -105,6 +105,8 @@ class PiSynth(Thread):
         msg.add_arg(0)
         msg_build = msg.build()
         self.manager.client.send(msg_build)
+        time.sleep(self.arg_dict['env_time0'] + self.arg_dict['env_time1'] +
+                self.arg_dict['env_time2'] + self.arg_dict['env_time3'])
         self.manager.return_nid(nid)
 
 def play_sine(client, freq=440, amp=0.5, duration=0.3):

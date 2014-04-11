@@ -24,3 +24,6 @@ class Engine(Thread):
 
     def crank(self):
         raise NotImplementedError
+
+    def perturb(self):
+        raise NotImplementedError

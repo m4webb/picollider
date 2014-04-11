@@ -8,13 +8,12 @@ import time
 from pythonosc.udp_client import UDPClient
 from pythonosc.osc_message_builder import OscMessageBuilder
 
-#import picollider.bells as bells
-#import picollider.silence as silence 
 import picollider.manager as manager
 import picollider.synthdefs as synthdefs
 from picollider.mood import Mood
 from picollider.blips import SimpleBlipperEngine
 from picollider.flits import FlitterEngine
+from picollider.bells import BellsEngine
 
 
 class _MessageHandler(socketserver.BaseRequestHandler):
@@ -57,8 +56,13 @@ class Brain(threading.Thread):
         self._recipient_addresses = recipient_addresses
         self._moods = [
                 Mood(self, SimpleBlipperEngine),
+                Mood(self, SimpleBlipperEngine),
+                Mood(self, SimpleBlipperEngine),
+                Mood(self, SimpleBlipperEngine),
                 Mood(self, FlitterEngine),
-                #silence.SilenceMood(self),
+                Mood(self, FlitterEngine),
+                Mood(self, FlitterEngine),
+                Mood(self, BellsEngine),
                 ]
 
         self.running = False
