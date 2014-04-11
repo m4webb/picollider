@@ -1,5 +1,5 @@
 class Message(object):
-    def __init__(self, confidence, mood, contents={}):
+    def __init__(self, confidence, engine_name, contents={}):
         self.confidence = confidence
-        self.mood = mood
+        self.engine_name = engine_name
         self.contents = contents

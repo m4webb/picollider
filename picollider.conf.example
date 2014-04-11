@@ -4,3 +4,10 @@ message_address = 192.168.2.1, 50001
 recipient_addresses = 192.168.2.2, 50001; 192.168.2.3, 50001
 nids_start = 10000
 nids_end = 40000
+
+[Personality]
+assertiveness = 0.10
+moodiness = 0.02
+conf_fluc = 0.05
+infl_fluc = 0.05
+irritability = 0.10

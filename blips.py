@@ -6,34 +6,28 @@ import picollider.pisynth as pisynth
 import picollider.piutils as piutils
 import picollider.parameters as parameters
 from picollider.message import Message
+from picollider.engine import Engine
 
-class BlipperBase(Thread):
+class BlipperEngineBase(Engine):
     """Constant envelope; wait time, duration, pitch drawn from implementable
     functions."""
     def __init__(self, manager, env_levels = [0, 1, 0.4, 0],
                  env_times = [0.01, 0.03, 0.5], 
                  overtone_amps = [0.1, 0, 0, 0, 0, 0, 0, 0],
                 ):
-        super().__init__()
-        self.daemon = True
-        self.manager = manager
+        super().__init__(manager)
         self.env_levels = env_levels
         self.env_times = env_times
         self.overtone_amps = overtone_amps
-        self.running = False
     def get_wait_time(self):
         raise NotImplementedError
     def get_duration(self):
         raise NotImplementedError
     def get_freq(self):
         raise NotImplementedError
-    def run(self):
-        self.running = True
-        while self.running:
-            self.play_next_blip()
-            time.sleep(self.get_wait_time())
-    def stop(self):
-        self.running = False
+    def crank(self):
+        self.play_next_blip()
+        time.sleep(self.get_wait_time())
     def play_next_blip(self):
         freq = self.get_freq()
         args = {}
@@ -55,16 +49,20 @@ class BlipperBase(Thread):
         synth = pisynth.PiSynth(self.manager, **args)
         synth.start()
 
-class SimpleBlipper(BlipperBase):
+class SimpleBlipperEngine(BlipperEngineBase):
     def __init__(self, manager, wait_times=parameters.SetParameter('wait_times', 
                                                                   {0.1, 0.1, 0.3, 0.5}),
                  durations=parameters.SetParameter('durations', {0.2, 0.4, 0.4, 0.6, 0.9}),
                  freqs=parameters.SetParameter('freqs', {400, 450, 500, 550, 600}),
                  **kwargs):
         super().__init__(manager, **kwargs)
+        self.name = 'SimpleBlipper'
         self.wait_times = wait_times
         self.durations = durations
         self.freqs = freqs
+        self.wait_times.obj = set((0.5 + random.random()**10*10 for i in range(3)))
+        self.durations.obj = set((0.5 + random.random()**10*10 for i in range(3)))
+        self.freqs.obj = set((200 + random.random()*1000 for i in range(5)))
         self.parameters = [wait_times, durations, freqs]
     def get_wait_time(self):
         return random.choice(list(self.wait_times.obj))
@@ -72,74 +70,33 @@ class SimpleBlipper(BlipperBase):
         return random.choice(list(self.durations.obj))
     def get_freq(self):
         return random.choice(list(self.freqs.obj))
-
-class SimpleBlipperMood(object):
-    def __init__(self, brain):
-        self.brain = brain
-        self.mood_name = "SimpleBlipper"
-        self.running = False
-
-    def read_message(self, message):
-        self.brain.parameter_lock.acquire()
-        if message.mood != self.mood_name:
-            return
-        probability = message.confidence
-        for parameter in self.blipper.parameters:
-            if random.random() < probability:
-                parameter.respond_to_message(message)
-        self.brain.parameter_lock.release()
-
-    def create_message(self):
-        message = Message(self.brain.confidence, self.mood_name)
-        probability = self.brain.influence
-        for parameter in self.blipper.parameters:
-            if random.random() < probability:
-                parameter.prepare_message(message)
-        return message
-
-    def enter(self, message=None):
-        if self.running:
-            return
-        self.blipper = SimpleBlipper(self.brain.manager)
-        if message and message.mood == self.mood_name:
-            for parameter in self.blipper.parameters:
-                parameter.initialize_message(message)
-        self.blipper.start()
-        self.running = True
-
-    def leave(self):
-        if not self.running:
-            pass
-        self.blipper.stop()
-        self.running = False
-
     def perturb(self, magnitude):
         if random.random() < magnitude:
-            old_set = self.blipper.wait_times.obj
+            old_set = self.wait_times.obj
             for item in old_set.copy():
-                if random.random() < magnitude:
+                if random.random() < magnitude and len(old_set) > 1:
                     old_set.discard(item)
             for i in range(3):
                 old_set.add(0.1 + random.random()*3)
-            self.blipper.wait_times.obj = old_set
+            self.wait_times.obj = old_set
         if random.random() < magnitude:
-            old_set = self.blipper.durations.obj
+            old_set = self.durations.obj
             for item in old_set.copy():
-                if random.random() < magnitude:
+                if random.random() < magnitude and len(old_set) > 1:
                     old_set.discard(item)
             for i in range(3):
                 old_set.add(0.1 + random.random()*3)
-            self.blipper.durations.obj = old_set
+            self.durations.obj = old_set
         if random.random() < magnitude:
-            old_set = self.blipper.freqs.obj
+            old_set = self.freqs.obj
             for item in old_set.copy():
-                if random.random() < magnitude:
+                if random.random() < magnitude and len(old_set) > 1:
                     old_set.discard(item)
             for i in range(3):
                 old_set.add(200 + random.random()*1000)
-            self.blipper.freqs.obj = old_set
+            self.freqs.obj = old_set
 
-class HMMBlipper(BlipperBase):
+class HMMBlipper(BlipperEngineBase):
     def __init__(self, manager, wait_time_A, wait_time_B, wait_time_index,
                  duration_A, duration_B, duration_index, freq_A, freq_B,
                  freq_index, **kwargs):
